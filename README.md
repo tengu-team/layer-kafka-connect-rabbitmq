@@ -24,9 +24,11 @@ Default values are used for Kafka connect topic creation, a detailed list of the
 ```
 model = os.environ['JUJU_MODEL_NAME']
 juju_unit_name = os.environ['JUJU_UNIT_NAME'].replace('/', '.')
-offset.storage.topic = model + '.' + juju_unit_name + '.connectoffsets'
-config.storage.topic = model + '.' + juju_unit_name + '.connectconfigs'
-status.storage.topic = model + '.' + juju_unit_name + '.connectstatus'
+offset.storage.topic = model + '.' + juju_unit_name + '.connectoffsets' # 50 partitions
+config.storage.topic = model + '.' + juju_unit_name + '.connectconfigs' # 1 partition
+status.storage.topic = model + '.' + juju_unit_name + '.connectstatus'  # 10 partitions
+
+Replication factor = # Kafka brokers
 ``` 
 These topics can be manually created before starting Kafka connect with configs that suit your needs.
 

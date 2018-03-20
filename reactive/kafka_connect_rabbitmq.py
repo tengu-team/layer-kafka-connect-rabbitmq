@@ -6,6 +6,9 @@ from charms.layer.kafka_connect_helpers import (
     set_worker_config, 
     register_connector,
     unregister_connector,
+    get_configs_topic,
+    get_offsets_topic,
+    get_status_topic,
 )
 
 
@@ -43,10 +46,10 @@ def config_changed():
 
 
 @when('rabbitmq.available',
-      'config.set.max-tasks')
+      'config.set.max-tasks',
+      'kafka-connect-base.topic-created')
 @when_not('kafka-connect-rabbitmq.installed')
 def install_kafka_connect_rabbitmq():
-    juju_unit_name = JUJU_UNIT_NAME.replace('/', '.')
     worker_configs = {
         'key.converter': 'com.github.jcustenborder.kafka.connect.converters.ByteArrayConverter',
         'value.converter': 'com.github.jcustenborder.kafka.connect.converters.ByteArrayConverter',
@@ -57,9 +60,9 @@ def install_kafka_connect_rabbitmq():
         'internal.key.converter.schemas.enable': 'false',
         'internal.value.converter.schemas.enable': 'false',
         'offset.flush.interval.ms': '10000',
-        'config.storage.topic': MODEL_NAME + '.' + juju_unit_name + '.connectconfigs',
-        'offset.storage.topic': MODEL_NAME + '.' + juju_unit_name + '.connectoffsets',
-        'status.storage.topic': MODEL_NAME + '.' + juju_unit_name + '.connectstatus',
+        'config.storage.topic': get_configs_topic(),
+        'offset.storage.topic': get_offsets_topic(),
+        'status.storage.topic': get_status_topic(),
     }
     set_worker_config(worker_configs)
     set_flag('kafka-connect-rabbitmq.installed')

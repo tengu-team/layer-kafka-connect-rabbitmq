@@ -3,7 +3,6 @@ summary: Kafka connect for rabbitmq
 maintainer: Sander Borny <sanderborny@ugent.be>
 description: |
   Kafka connect for rabbitmq (sink).
-subordinate: false
 requires:
   rabbitmq:
     interface: rabbitmq
