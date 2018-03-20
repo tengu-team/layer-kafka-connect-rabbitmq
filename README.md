@@ -18,7 +18,6 @@ juju config connect "topics=topic1 topic2"
 ```
 
 ## Caveats
-This setup only handles json formatted Kafka messages.
 
 Default values are used for Kafka connect topic creation, a detailed list of these values can be found [here](https://docs.confluent.io/current/connect/userguide.html). This charm will create three topics for kafka connect with the following naming scheme:
 ```
