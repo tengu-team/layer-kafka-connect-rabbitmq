@@ -17,22 +17,6 @@ juju add-relation kubernetes-deployer connect:kubernetes
 juju config connect "topics=topic1 topic2" 
 ```
 
-## Caveats
-
-Default values are used for Kafka connect topic creation, a detailed list of these values can be found [here](https://docs.confluent.io/current/connect/userguide.html). This charm will create three topics for kafka connect with the following naming scheme:
-```
-model = os.environ['JUJU_MODEL_NAME']
-juju_unit_name = os.environ['JUJU_UNIT_NAME'].replace('/', '.')
-offset.storage.topic = model + '.' + juju_unit_name + '.connectoffsets' # 50 partitions
-config.storage.topic = model + '.' + juju_unit_name + '.connectconfigs' # 1 partition
-status.storage.topic = model + '.' + juju_unit_name + '.connectstatus'  # 10 partitions
-
-Replication factor = # Kafka brokers
-``` 
-These topics can be manually created before starting Kafka connect with configs that suit your needs.
-
-This charm is not intended to scale. One charm corresponds to one Kafka connect cluster. Modify the `workers` config to scale the number of workers.
-
 ## Authors
 
 This software was created in the [IBCN research group](https://www.ibcn.intec.ugent.be/) of [Ghent University](https://www.ugent.be/en) in Belgium. This software is used in [Tengu](https://tengu.io), a project that aims to make experimenting with data frameworks and tools as easy as possible.

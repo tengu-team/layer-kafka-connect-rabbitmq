@@ -1,7 +1,19 @@
 import os
-from charms.reactive import when, when_any, when_not, set_flag, clear_flag
+from charms import leadership
+from charms.reactive import (
+    when,
+    when_any,
+    when_not,
+    set_flag,
+    clear_flag
+)
 from charms.reactive.relations import endpoint_from_flag
-from charmhelpers.core.hookenv import config, log, status_set
+from charmhelpers.core.hookenv import (
+    config,
+    log,
+    status_set,
+    is_leader,
+)
 from charms.layer.kafka_connect_helpers import (
     set_worker_config, 
     register_connector,
@@ -20,13 +32,18 @@ RABBTMQ_CONNECTOR_NAME = (MODEL_NAME +
                          JUJU_UNIT_NAME.split('/')[0] +
                          '-rabbitmq')
 
+@when('kafka-connect-base.ready',
+      'rabbitmq.connected')
+def status_set_ready():
+    status_set('active', 'ready')
 
 @when_not('rabbitmq.connected')
 def blocked_for_rabbitmq():
     status_set('blocked', 'Waiting for rabbitmq relation')
 
 
-@when('rabbitmq.connected')
+@when('rabbitmq.connected',
+      'leadership.is_leader')
 @when_not('rabbitmq.available')
 def setup_rabbitmq():
     rabbitmq = endpoint_from_flag('rabbitmq.connected')
@@ -47,7 +64,8 @@ def config_changed():
 
 @when('rabbitmq.available',
       'config.set.max-tasks',
-      'kafka-connect-base.topic-created')
+      'kafka-connect-base.topic-created',
+      'leadership.is_leader')
 @when_not('kafka-connect-rabbitmq.installed')
 def install_kafka_connect_rabbitmq():
     worker_configs = {
@@ -71,7 +89,8 @@ def install_kafka_connect_rabbitmq():
 
 @when('kafka-connect.running',
       'rabbitmq.available',
-      'config.set.max-tasks')
+      'config.set.max-tasks',
+      'leadership.is_leader')
 @when_not('kafka-connect-rabbitmq.running')
 def start_kafka_connect_rabbitmq():
     rabbitmq = endpoint_from_flag('rabbitmq.available')
@@ -99,7 +118,8 @@ def start_kafka_connect_rabbitmq():
         status_set('blocked', 'Could not register/update connector, retrying next hook.')
 
 
-@when('kafka-connect-rabbitmq.running')
+@when('kafka-connect-rabbitmq.running',
+      'leadership.is_leader')
 @when_not('rabbitmq.connected', 'kafka-connect-rabbitmq.stopped')
 def stop_rabbitmq_connect():
     response = unregister_connector(RABBTMQ_CONNECTOR_NAME)
