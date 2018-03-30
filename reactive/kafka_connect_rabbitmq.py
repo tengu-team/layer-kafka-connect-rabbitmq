@@ -1,5 +1,6 @@
 import os
 from charms import leadership
+from charms.layer import status
 from charms.reactive import (
     when,
     when_any,
@@ -11,7 +12,6 @@ from charms.reactive.relations import endpoint_from_flag
 from charmhelpers.core.hookenv import (
     config,
     log,
-    status_set,
     is_leader,
 )
 from charms.layer.kafka_connect_helpers import (
@@ -35,11 +35,11 @@ RABBTMQ_CONNECTOR_NAME = (MODEL_NAME +
 @when('kafka-connect-base.ready',
       'rabbitmq.connected')
 def status_set_ready():
-    status_set('active', 'ready')
+    status.active('ready')
 
 @when_not('rabbitmq.connected')
 def blocked_for_rabbitmq():
-    status_set('blocked', 'Waiting for rabbitmq relation')
+    status.blocked('Waiting for rabbitmq relation')
 
 
 @when('rabbitmq.connected',
@@ -53,7 +53,7 @@ def setup_rabbitmq():
     username = JUJU_UNIT_NAME.split('/')[0]
     vhost = '/' + juju_app_name
     rabbitmq.request_access(username, vhost)
-    status_set('waiting', 'Waiting on RabbitMQ to configure vhost')
+    status.waiting('Waiting on RabbitMQ to configure vhost')
 
 
 @when_any('config.changed.topics',
@@ -110,12 +110,12 @@ def start_kafka_connect_rabbitmq():
 
     response = register_connector(rabbitmq_connector_config, RABBTMQ_CONNECTOR_NAME)
     if response and (response.status_code == 200 or response.status_code == 201):
-        status_set('active', 'ready')
+        status.active('ready')
         clear_flag('kafka-connect-rabbitmq.stopped')
         set_flag('kafka-connect-rabbitmq.running')
     else:
         log('Could not register/update connector Response: ' + str(response))
-        status_set('blocked', 'Could not register/update connector, retrying next hook.')
+        status.blocked('Could not register/update connector, retrying next hook.')
 
 
 @when('kafka-connect-rabbitmq.running',

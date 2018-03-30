@@ -1,3 +1,4 @@
 includes: ['layer:kafka-connect-base',
+           'layer:status',
            'interface:rabbitmq']  
 repo: https://github.com/tengu-team/layer-kafka-connect-rabbitmq.git
